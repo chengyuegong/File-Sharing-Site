@@ -2,127 +2,75 @@
     include "functions.php";
     session_start();
     // make sure the user signs in from the login page
-    if (!isset($_SESSION["username"])) {
-        $_SESSION["validUser"] = false;
+    if (!isset($_SESSION["file-sharing-site-username"])) {
         $_SESSION["msg"] = "Sorry, no Access to this page";
+        gotoIndexPage();
     } else {
-        $_SESSION["validUser"] = true;
-        $username = $_SESSION["username"];
+        $username = $_SESSION["file-sharing-site-username"];
     }
+    if (!isset($_SESSION["user_dir"])) {
+        $_SESSION["user_dir"] = $username; 
+    }
+    $current_dir = $_SESSION["base_dir"].$_SESSION["user_dir"];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>File</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+    <script>
+        $(function () {
+            bsCustomFileInput.init()
+        });
+    </script>
 </head>
 <body>
-<!-- Logout button -->
-<form action="logout.php" method="POST">
-    <p><input type="submit" class="signbutton" value="Sign out"/></p>
-</form>
-<?php
-if (!$_SESSION["validUser"]) {
-    echo "</body>\n";
-    echo "</html>\n";
-    exit;
-}
-// display the file list associated with the login user
-// print hello msg
-printf("<div>\n");
-printf("<h1>Hello, %s!</h1>\n", htmlentities($username));
-if (!isset($_SESSION["user_dir"])) {
-    $_SESSION["user_dir"] = $username; 
-}
-$current_dir = $_SESSION["base_dir"].$_SESSION["user_dir"];
-
-// print the current directory
-printf("<p>Current Location: /%s</p>\n", $_SESSION["user_dir"]);
-// back button
-if (strpos($_SESSION["user_dir"], "/") != false) {
-    printf("<form action=\"back.php\" method=\"POST\">\n");
-    printf("<input type=\"submit\" value=\"Back\">\n");
-    printf("</form>\n");
-}
-printf("<hr>\n");
-list_files($current_dir);
-printf("<hr>\n");
-?>
-<!-- create folder button -->
-<div class="left">
-<form action="createfolder.php" method="POST">
-    <label for="folder_input">Create a new folder:</label>
-    <input type="text" name="foldername" id="folder_input" placeholder="Folder Name"/>
-    <input type="submit" value="Create"/> 
-</form>
-</div>
-<!-- upload button -->
-<div class="left">
-<form enctype="multipart/form-data" action="upload.php" method="POST">
-    <label for="uploadfile_input">Choose a file to upload:</label>
-    <input type="file" name="uploadedfile" id="uploadfile_input"/>
-    <input type="submit" value="Upload"/> 
-</form>
-</div>
-</div>
-<?php
-// display message
-if (isset($_SESSION["msg"])) {
-    printf("<p class=\"message\">%s</p>\n", $_SESSION["msg"]);
-    unset($_SESSION["msg"]);
-}
-?>
+    <!-- Logout button -->
+    <form action="logout.php" method="POST">
+        <button type="submit" class="btn btn-dark" id="signout-btn">Sign out</button>
+    </form>
+    <div id="file-list">
+        <h1 id="hello-msg">Hello, <?php echo htmlentities($username);?>!</h1>
+        <form action="back.php" method="POST">
+            <button type="submit" class="btn btn-dark" id="back-btn">Back</button>
+        </form>
+        <p id="current-dir">Current Directory: /<?php echo $_SESSION["user_dir"];?></p>
+        <hr>
+        <div id="files">
+        <?php list_files($current_dir); ?>
+        </div>
+        <hr>
+        <!-- create folder button -->
+        <form action="createfolder.php" method="POST">
+            <div class="form-group">
+                <label for="folderName">Create a new folder: </label>
+                <input type="text" class="form-control" name="foldername" id="folderName" placeholder="Folder Name" />
+            </div>
+            <button type="submit" class="btn btn-dark mb-2">Create</button>
+        </form>
+        <!-- upload button -->
+        <form enctype="multipart/form-data" action="upload.php" method="POST">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" name="uploadedfile" id="uploadFile" />
+                <label class="custom-file-label" for="uploadFile">Choose file</label>
+            </div>
+            <button type="submit" class="btn btn-dark mb-2">Upload</button>
+        </form>
+    </div>
+    <?php
+    // display message
+	if (isset($_SESSION['msg'])) {
+		$msg = htmlentities($_SESSION['msg']);
+		echo "<script>alert('$msg');</script>";
+		unset($_SESSION['msg']);
+	}
+	?>
 </body>
 </html>
-
-<?php
-function list_files($path) {
-    printf("<div class=\"left\">\n");
-    $directory = opendir($path);
-    $files = array();
-    while (($file = readdir($directory)) !== false) {
-        $full_path = $path . "/" . $file;
-        if ($file == '.' || $file == '..') {
-            continue;
-        } elseif (is_dir($full_path)) { // folder
-            printf("<div class=\"left item\"><p><i class=\"fas fa-folder\"></i>%s</p>\n", $file);
-            printf("<form action=\"enter.php\" method=\"POST\">\n");
-            printf("<input type=\"hidden\" value=\"%s\" name=\"dir\" />\n", $file);
-            printf("<input type=\"submit\" value=\"Enter\" />\n");
-            printf("</form>\n");
-            printf("<form action=\"delete.php\" method=\"POST\" >\n");
-            printf("<input type=\"hidden\" value=\"%s\" name=\"deletedfile\" />\n", $file);
-            printf("<input type=\"submit\" value=\"Delete\" />\n");
-            printf("</form>\n");
-            printf("</div>\n");
-        } else { // file
-            array_push($files, $file);
-        }
-    }
-    // display files
-    for ($i = 0; $i < count($files); $i++) {
-        printf("<div class=\"left item\"><p><i class=\"fas fa-file\"></i>%s</p>\n", $files[$i]);
-        printf("<form action=\"view.php\" method=\"POST\" target=\"_blank\">\n");
-        printf("<input type=\"hidden\" value=\"%s\" name=\"filename\" />\n", $files[$i]);
-        printf("<input type=\"submit\" value=\"View\" />\n");
-        printf("</form>\n");
-        printf("<form action=\"delete.php\" method=\"POST\">\n");
-        printf("<input type=\"hidden\" value=\"%s\" name=\"deletedfile\" />\n", $files[$i]);
-        printf("<input type=\"submit\" value=\"Delete\" />\n");
-        printf("</form>\n");
-        printf("<form action=\"sender.php\" method=\"POST\">\n");
-        printf("<label for=\"uname%d\">Send to:</label>\n", $i);
-        printf("<input type=\"text\" name=\"receiver\" placeholder=\"User Name\" id=\"uname%d\" />\n", $i);
-        printf("<input type=\"hidden\" value=\"%s\" name=\"filename\" />\n", $files[$i]);
-        printf("<input type=\"submit\" value=\"Send\" />\n");
-        printf("</form>\n");
-        printf("</div>\n");
-    }
-    closedir($directory);
-    printf("</div>\n");
-}
-?>

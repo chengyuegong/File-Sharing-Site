@@ -11,7 +11,7 @@ $mime = $finfo->file($full_path);
 
 if ($mime=="inode/x-empty"){
     $_SESSION["msg"] = "Empty File cannot be viewed";
-	back2FilePage();
+	gotoFilePage();
 }
 // Finally, set the Content-Type header to the MIME type of the file, and display the file.
 if (strpos($mime,'text')===false && strpos($mime,'image')===false && strpos($mime,'application/pdf')===false) {
