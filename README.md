@@ -5,7 +5,7 @@ This is a file sharing website (modified from the couresework of Rapid Prototype
 ![alt text](https://img.shields.io/badge/php-7.0.33-blue.svg)
 ![alt text](https://img.shields.io/badge/apache-2.0-red.svg)
 ![alt text](https://img.shields.io/badge/bootstrap4.3.1-blueviolet.svg)
-![alt text](https://img.shields.io/badge/yellow.svg)
+![alt text](https://img.shields.io/badge/javascript-yellow.svg)
 
 ## Website Link
 http://ec2-3-17-140-54.us-east-2.compute.amazonaws.com/~gcy1996/file-sharing-site/index.php
