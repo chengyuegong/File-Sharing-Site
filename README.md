@@ -2,7 +2,7 @@
 This is a file sharing website (modified from the couresework of Rapid Prototype Development and Creative Programming).
 
 ## Website Link
-http://ec2-3-17-140-54.us-east-2.compute.amazonaws.com/~gcy1996/file-sharing-site/index.php
+http://ec2-3-17-193-103.us-east-2.compute.amazonaws.com/~gcy1996/file-sharing-site/index.php
 
 * * *
 ## Functions
